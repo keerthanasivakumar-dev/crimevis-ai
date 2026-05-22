@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CRIMEVIS AI Dashboard</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #ff0000;
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        h3 {
+            color: #888;
+            margin-top: 0;
+        }
+        #feed {
+            border: 3px solid #ff0000;
+            border-radius: 10px;
+            width: 640px;
+            margin: 20px auto;
+        }
+        #status-box {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            width: 400px;
+            margin: 0 auto;
+        }
+        #threat-score {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        #threat-status {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+        #incidents {
+            font-size: 1em;
+            color: #888;
+            margin-top: 10px;
+        }
+        .clear { color: #00ff00; }
+        .medium { color: #ffa500; }
+        .high { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <h1>🔴 CRIMEVIS AI</h1>
+    <h3>Real-Time Crime Detection & Threat Analysis</h3>
+
+    <img id="feed" src="/video">
+
+    <div id="status-box">
+        <div>THREAT SCORE</div>
+        <div id="threat-score">0/10</div>
+        <div id="threat-status">Loading...</div>
+        <div id="incidents">Total Incidents: 0</div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            fetch('/status')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('threat-score').textContent =
+                        data.score + '/10';
+                    document.getElementById('threat-status').textContent =
+                        data.status;
+                    document.getElementById('incidents').textContent =
+                        'Total Incidents: ' + data.total_incidents;
+
+                    const statusEl = document.getElementById('threat-status');
+                    if (data.score >= 7) {
+                        statusEl.className = 'high';
+                    } else if (data.score >= 4) {
+                        statusEl.className = 'medium';
+                    } else {
+                        statusEl.className = 'clear';
+                    }
+                });
+        }
+        setInterval(updateStatus, 1000);
+    </script>
+</body>
+</html>
