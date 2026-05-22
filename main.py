@@ -1,3 +1,4 @@
+from email_alert import send_alert
 import cv2
 from ultralytics import YOLO
 import datetime
@@ -6,7 +7,6 @@ import os
 model = YOLO("yolov8n.pt")
 cap = cv2.VideoCapture(0)
 
-# Create folder to save incidents
 os.makedirs("incidents", exist_ok=True)
 
 print("CRIMEVIS AI - Incident Logging Active...")
@@ -40,10 +40,8 @@ while True:
             label = model.names[int(box.cls)]
             confidence = float(box.conf)
             detected_labels.append(label)
-
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             color = get_threat_color(3)
-
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
             cv2.putText(frame, f"{label} {confidence:.0%}",
                         (x1, y1-10),
@@ -52,7 +50,6 @@ while True:
     score = get_threat_score(detected_labels)
     color = get_threat_color(score)
 
-    # Timestamp
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -67,11 +64,11 @@ while True:
                     (10, 110), cv2.FONT_HERSHEY_SIMPLEX,
                     0.8, (0, 0, 255), 2)
 
-        # Save screenshot every 5 seconds
         if last_saved is None or (now - last_saved).seconds >= 5:
             filename = f"incidents/incident_{now.strftime('%Y%m%d_%H%M%S')}.jpg"
             cv2.imwrite(filename, frame)
             print(f"INCIDENT SAVED: {filename}")
+            send_alert(score, filename)
             last_saved = now
     else:
         cv2.putText(frame, "ALL CLEAR",
@@ -85,3 +82,4 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
